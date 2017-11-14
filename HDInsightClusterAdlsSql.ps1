@@ -72,7 +72,7 @@ CLS
 <###################################################################################
     Create a credential to use across all of the services that need one 
 ###################################################################################>
-Write-Host 'Creating general credential UserName: admin Password: '$password
+Write-Host "Creating general credential UserName: $username Password: $password"
 
 $secureStringPassword = ConvertTo-SecureString -String $password -Force -AsPlainText 
 $psCredential = new-object -typename System.Management.Automation.PSCredential -argumentlist $username, $secureStringPassword
@@ -132,9 +132,9 @@ if (($sql = Get-AzureRmSqlServer -ServerName $sqlServerName -ResourceGroupName $
     -Location $location `
     -SqlAdministratorCredentials $psCredential 
     
-    Start-Sleep 20
+    Start-Sleep -s 30
 
-    New-AzureSqlDatabaseServerFirewallRule -ServerName $sql.ServerName -AllowAllAzureServices -
+    New-AzureSqlDatabaseServerFirewallRule -ServerName $sql.ServerName -AllowAllAzureServices  
     
 }
 
@@ -210,7 +210,7 @@ if ($application -eq $null -OR $newCert -eq 'yes')
         
     $servicePrincipal = New-AzureRmADServicePrincipal -ApplicationId $application.ApplicationId 
 
-    Start-Sleep 30
+    Start-Sleep -s 30
 
     New-AzureRmRoleAssignment `
         -RoleDefinitionName Owner `

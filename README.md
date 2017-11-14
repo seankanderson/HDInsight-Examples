@@ -1,21 +1,2 @@
 
-
-Create self-signed certificate
-
-Create resource group
-
-Create Azure SQL Database instance
-
-Create database for meta store
-
-create service principal for HD Insight cluster 
-
-Create Azure Data Lake Store account
-
-Assign permissions to service principal for ADLS 
-
-Create HDInsight cluster 
-
-
-
-
+Powershell script to create a HDInsight cluster with the Hive metastore on SQL Server and Azure Data Lake Store as the default file system.
