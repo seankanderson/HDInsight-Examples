@@ -45,8 +45,8 @@ param(
  $location = 'East US 2',
 
  [string]
- $clusterName = 'myplaygroundhdinsightcluster',
-  
+ $clusterName = 'playgroundhdinsightcluster01',
+   
  [string]
  $dlsName = 'myhdinsightdatalakestore',  
 
@@ -81,7 +81,7 @@ $psCredential = new-object -typename System.Management.Automation.PSCredential -
 <###################################################################################
     Log In
 ###################################################################################>
-if (Test-Path 'profile.json')
+if (Test-Path $profilePath)
 {
     Write-Host 'Using profile.json'
     Select-AzureRmProfile -Path $profilePath
@@ -132,9 +132,9 @@ if (($sql = Get-AzureRmSqlServer -ServerName $sqlServerName -ResourceGroupName $
     -Location $location `
     -SqlAdministratorCredentials $psCredential 
     
-    Start-Sleep -s 30
-
-    New-AzureSqlDatabaseServerFirewallRule -ServerName $sql.ServerName -AllowAllAzureServices  
+    Start-Sleep -s 15
+        
+    New-AzureRmSqlServerFirewallRule -ServerName $sql.ServerName -AllowAllAzureIPs -ResourceGroupName $resourceGroupName
     
 }
 
@@ -231,11 +231,14 @@ if (($storageAccount = Get-AzureRmDataLakeStoreAccount -Name $dlsName -erroracti
     -Name $dlsName `
     -Location $location `
     -DisableEncryption
+        
 }
 
 if (($adlFolder = Get-AzureRmDataLakeStoreItem -Account $storageAccount.Name -Path '/HDInsightClusterStore' -erroraction 'silentlycontinue') -eq $null)
 {
-    $adlFolder = New-AzureRmDataLakeStoreItem -Account $storageAccount.Name -Path '/HDInsightClusterStore' -Folder
+    New-AzureRmDataLakeStoreItem -Account $storageAccount.Name -Path '/HDInsightClusterStore' -Folder
+    Start-Sleep -s 10
+    $adlFolder = Get-AzureRmDataLakeStoreItem -Account $storageAccount.Name -Path '/HDInsightClusterStore'
 
 }
 
