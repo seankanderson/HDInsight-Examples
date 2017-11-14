@@ -291,8 +291,4 @@ New-AzureRmHDInsightClusterConfig `
     -CertificateFilePath $pfxPath `
     -CertificatePassword $password `
     
-
-
- #need to add Hive/Oozie metastore config to a SQL Server
-
-
+    
