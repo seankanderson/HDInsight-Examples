@@ -132,6 +132,7 @@ if (($sql = Get-AzureRmSqlServer -ServerName $sqlServerName -ResourceGroupName $
     -Location $location `
     -SqlAdministratorCredentials $psCredential 
     
+    Write-Host 'Waiting for a bit...'
     Start-Sleep -s 15
         
     New-AzureRmSqlServerFirewallRule -ServerName $sql.ServerName -AllowAllAzureIPs -ResourceGroupName $resourceGroupName
@@ -208,9 +209,9 @@ if ($application -eq $null -OR $newCert -eq 'yes')
         
     Write-Host 'Creating service principal'
         
-    $servicePrincipal = New-AzureRmADServicePrincipal -ApplicationId $application.ApplicationId 
-
-    Start-Sleep -s 30
+    New-AzureRmADServicePrincipal -ApplicationId $application.ApplicationId 
+    
+    $servicePrincipal = Get-AzureRmADServicePrincipal -SearchString "HDInsightClusters" 
 
     New-AzureRmRoleAssignment `
         -RoleDefinitionName Owner `
@@ -236,10 +237,8 @@ if (($storageAccount = Get-AzureRmDataLakeStoreAccount -Name $dlsName -erroracti
 
 if (($adlFolder = Get-AzureRmDataLakeStoreItem -Account $storageAccount.Name -Path '/HDInsightClusterStore' -erroraction 'silentlycontinue') -eq $null)
 {
-    New-AzureRmDataLakeStoreItem -Account $storageAccount.Name -Path '/HDInsightClusterStore' -Folder
-    Start-Sleep -s 10
-    $adlFolder = Get-AzureRmDataLakeStoreItem -Account $storageAccount.Name -Path '/HDInsightClusterStore'
-
+    $adlFolder =New-AzureRmDataLakeStoreItem -Account $storageAccount.Name -Path '/HDInsightClusterStore' -Folder
+    
 }
 
 <###################################################################################
@@ -257,6 +256,20 @@ $clusterNodes = '2'
 $clusterVersion = '3.6'
 $clusterType = 'Spark'
 $clusterOs = 'Linux'
+
+while($adlFolder.Path -eq $null)
+{
+    Write-Host 'Waiting on Data Lake Store to become available...'
+    $adlFolder = Get-AzureRmDataLakeStoreItem -Account $storageAccount.Name -Path '/HDInsightClusterStore' -erroraction 'silentlycontinue'
+    Start-Sleep -s 20
+}
+
+while($servicePrincipal.Id -eq $null)
+{    
+    Write-Host 'Waiting for Service Principal to propagate...'
+    $servicePrincipal = Get-AzureRmADServicePrincipal -SearchString "HDInsightClusters" 
+    Start-Sleep -s 20
+}
 
 Write-Host 'Creating HDInsight cluster...'
 
